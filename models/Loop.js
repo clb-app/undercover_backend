@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const Loop = mongoose.model("Loop", {
-  id_party: {
+  party_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Party",
   },

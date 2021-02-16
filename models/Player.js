@@ -3,11 +3,11 @@ const mongoose = require("mongoose");
 const Player = mongoose.model("Player", {
   nickname: {
     type: String,
-    required,
+    required: true,
   },
   role: String,
   word: String,
-  id_party: {
+  party_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Party",
   },

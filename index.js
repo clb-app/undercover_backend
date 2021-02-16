@@ -8,6 +8,10 @@ const app = express();
 app.use(formidable());
 app.use(cors());
 
+// import des routes
+const partyRoutes = require("./routes/party");
+app.use(partyRoutes);
+
 mongoose.connect(process.env.MONGODB_URI, {
   useCreateIndex: true,
   useUnifiedTopology: true,
@@ -15,7 +19,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 });
 
 app.all("*", (req, res) => {
-  res.status(404).json({ error: "Page not found" });
+  return res.status(404).json({ error: "Page not found" });
 });
 
 app.listen(process.env.PORT, () => {

@@ -1,7 +1,10 @@
 const mongoose = require("mongoose");
 
 const Party = mongoose.model("Party", {
-  creation_date: new Date(),
+  creation_date: {
+    type: Date,
+    default: new Date(),
+  },
   started: {
     type: Boolean,
     default: false,
@@ -20,6 +23,7 @@ const Party = mongoose.model("Party", {
   },
   players: Array,
   token: String,
+  code: Number,
   roles: Object,
   words: Object,
 });

@@ -1,15 +1,15 @@
 const mongoose = require("mongoose");
 
-const Loop = mongoose.model("Loop", {
+const Lap = mongoose.model("Lap", {
   party_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Party",
   },
-  loop_number: {
+  lap_number: {
     type: Number,
     default: 1,
   },
   eliminated_players: Array,
 });
 
-module.exports = Loop;
+module.exports = Lap;

@@ -16,6 +16,7 @@ mongoose.connect(process.env.MONGODB_URI, {
   useCreateIndex: true,
   useUnifiedTopology: true,
   useNewUrlParser: true,
+  useFindAndModify: false,
 });
 
 app.all("*", (req, res) => {

@@ -3,22 +3,24 @@ const mongoose = require("mongoose");
 const Player = mongoose.model("Player", {
   nickname: {
     type: String,
-    required,
+    required: true,
   },
   role: String,
   word: String,
-  id_party: {
+  party_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Party",
   },
-  player_token: {
-    type: String,
-    default: null,
+  is_turn: {
+    type: Boolean,
+    default: false,
   },
   is_ready: {
     type: Boolean,
     default: false,
   },
+  words: Array,
+  token: String,
 });
 
 module.exports = Player;

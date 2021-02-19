@@ -11,6 +11,8 @@ app.use(cors());
 // import des routes
 const partyRoutes = require("./routes/party");
 app.use(partyRoutes);
+const playerRoutes = require("./routes/player");
+app.use(playerRoutes);
 
 mongoose.connect(process.env.MONGODB_URI, {
   useCreateIndex: true,

@@ -25,7 +25,7 @@ const Party = mongoose.model("Party", {
   token: String,
   code: Number,
   roles: Object,
-  words: Object,
+  words: Array,
 });
 
 module.exports = Party;

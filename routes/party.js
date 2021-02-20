@@ -8,38 +8,43 @@ const Lap = require("../models/Lap");
 
 const isAuthenticated = require("../middlewares/isAuthenticated");
 
-router.post("/party/create", async (req, res) => {
+router.post("/party/new", async (req, res) => {
   try {
-    const { pseudo, playersNumber, roles } = req.fields;
-    const token = req.headers.authorization.replace("Bearer ", "");
+    // const { pseudo, playersNumber, roles } = req.fields;
+    const { player_id, playersNumber, roles } = req.fields;
 
-    const code = Math.round(Math.random() * (9999 - 1000) + 1000);
+    const code = Math.round(Math.random() * (999999 - 100000) + 100000);
 
-    const newPlayer = new Player({
-      nickname: pseudo,
-      token,
-    });
+    let player;
+    if (player_id) {
+      player = await Player.findById({ _id: player_id });
+    } else {
+      player = new Player({
+        nickname,
+        token,
+      });
+    }
 
     const newParty = new Party({
-      moderator_id: newPlayer._id,
+      moderator_id: player._id,
       players_number: playersNumber,
-      players: [newPlayer._id],
+      players: [player._id],
       token: uid2(16),
       code,
       roles,
     });
 
-    newPlayer.party_id = newParty._id;
+    player.party_id = newParty._id;
 
-    const newLoop = new Lap({
+    const newLap = new Lap({
       party_id: newParty._id,
     });
 
-    await newPlayer.save();
+    await player.save();
     await newParty.save();
-    await newLoop.save();
+    await newLap.save();
 
-    return res.status(200).json({ token: newParty.token, code });
+    return res.status(200).json({ party: newParty });
   } catch (err) {
     return res.status(400).json({ error: err });
   }

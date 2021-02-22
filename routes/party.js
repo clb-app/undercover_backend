@@ -4,6 +4,7 @@ const uid2 = require("uid2");
 
 const Party = require("../models/Party");
 const Player = require("../models/Player");
+const Word = require("../models/Word");
 const Lap = require("../models/Lap");
 
 const isAuthenticated = require("../middlewares/isAuthenticated");
@@ -27,6 +28,21 @@ router.post("/party/new", async (req, res) => {
 
     const code = Math.round(Math.random() * (999999 - 100000) + 100000);
 
+    const findWords = await Word.find();
+
+    const rand = Math.round(Math.random() * findWords.length - 1);
+    const words = [];
+    words.push(findWords[rand]);
+    for (let i = 0; i < findWords.length; i++) {
+      if (
+        findWords[i].type === words[0].type &&
+        findWords[i].word !== words[0].word
+      ) {
+        words.push(findWords[i]);
+        break;
+      }
+    }
+
     const newParty = new Party({
       moderator_id: player._id,
       players_number: playersNumber,
@@ -34,6 +50,7 @@ router.post("/party/new", async (req, res) => {
       token: uid2(16),
       code,
       roles,
+      words,
     });
 
     player.party_id = newParty._id;

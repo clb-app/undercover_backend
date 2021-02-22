@@ -8,38 +8,45 @@ const Lap = require("../models/Lap");
 
 const isAuthenticated = require("../middlewares/isAuthenticated");
 
-router.post("/party/create", async (req, res) => {
+router.post("/party/new", async (req, res) => {
   try {
-    const { pseudo, playersNumber, roles } = req.fields;
+    const { playersNumber, roles, nickname } = req.fields;
     const token = req.headers.authorization.replace("Bearer ", "");
 
-    const code = Math.round(Math.random() * (9999 - 1000) + 1000);
+    let player;
+    if (token) {
+      player = await Player.findOne({ token });
+    }
 
-    const newPlayer = new Player({
-      nickname: pseudo,
-      token,
-    });
+    if (!player) {
+      player = new Player({
+        nickname,
+        token,
+      });
+    }
+
+    const code = Math.round(Math.random() * (999999 - 100000) + 100000);
 
     const newParty = new Party({
-      moderator_id: newPlayer._id,
+      moderator_id: player._id,
       players_number: playersNumber,
-      players: [newPlayer._id],
+      players: [player._id],
       token: uid2(16),
       code,
       roles,
     });
 
-    newPlayer.party_id = newParty._id;
+    player.party_id = newParty._id;
 
-    const newLoop = new Lap({
+    const newLap = new Lap({
       party_id: newParty._id,
     });
 
-    await newPlayer.save();
+    await player.save();
     await newParty.save();
-    await newLoop.save();
+    await newLap.save();
 
-    return res.status(200).json({ token: newParty.token, code });
+    return res.status(200).json(newParty);
   } catch (err) {
     return res.status(400).json({ error: err });
   }
@@ -47,11 +54,11 @@ router.post("/party/create", async (req, res) => {
 
 router.get("/party/join", async (req, res) => {
   try {
-    const { code, pseudo } = req.query;
+    const { code, nickname } = req.query;
     const token = req.headers.authorization.replace("Bearer ", "");
 
     const party = await Party.findOne({ code });
-    let player = await Player.findOne({ nickname: pseudo, token });
+    let player = await Player.findOne({ token });
 
     if (party) {
       if (party.players.length < party.players_number) {
@@ -63,7 +70,8 @@ router.get("/party/join", async (req, res) => {
           }
         } else {
           player = new Player({
-            nickname: pseudo,
+            nickname,
+            token,
           });
         }
 
@@ -118,17 +126,13 @@ router.get("/party/play", isAuthenticated, async (req, res) => {
     await player.save();
 
     const party = await Party.findById(player.party_id);
-    console.log(party);
     let nextPlayer;
     for (let i = 0; i < party.players.length; i++) {
-      console.log("for");
       if (
         party.players[i]._id.equals(player._id) &&
         i + 1 < party.players.length
       ) {
-        console.log("if");
         nextPlayer = party.players[i + 1]._id;
-        console.log(nextPlayer);
         break;
       }
     }

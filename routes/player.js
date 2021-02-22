@@ -23,7 +23,7 @@ router.post("/player/new", async (req, res) => {
 
 router.get("/player", isAuthenticated, (req, res) => {
   console.log("route");
-  return res.status(200).json({ nickname: req.player.nickname });
+  return res.status(200).json({ player: req.player });
 });
 
 module.exports = router;

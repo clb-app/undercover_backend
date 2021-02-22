@@ -13,6 +13,8 @@ const partyRoutes = require("./routes/party");
 app.use(partyRoutes);
 const playerRoutes = require("./routes/player");
 app.use(playerRoutes);
+const wordRoutes = require("./routes/word");
+app.use(wordRoutes);
 
 mongoose.connect(process.env.MONGODB_URI, {
   useCreateIndex: true,

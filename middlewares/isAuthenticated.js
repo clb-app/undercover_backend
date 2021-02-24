@@ -8,6 +8,7 @@ const isAuthenticated = async (req, res, next) => {
 
     if (checkToken) {
       req.player = checkToken;
+      console.log("next");
       return next();
     } else {
       return res.status(401).json("Unauthorized");

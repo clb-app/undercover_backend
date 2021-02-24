@@ -46,7 +46,7 @@ router.post("/party/new", async (req, res) => {
     const newParty = new Party({
       moderator_id: player._id,
       players_number: playersNumber,
-      players: [player._id],
+      players: [player],
       token: uid2(16),
       code,
       roles,
@@ -93,7 +93,7 @@ router.get("/party/join", async (req, res) => {
         }
 
         const newPlayers = [...party.players];
-        newPlayers.push(player._id);
+        newPlayers.push(player);
         party.players = newPlayers;
 
         player.party_id = party._id;
@@ -108,6 +108,27 @@ router.get("/party/join", async (req, res) => {
     } else {
       return res.status(409).json({ conflict: "The code does not exist" });
     }
+  } catch (err) {
+    return res.status(400).json({ error: err });
+  }
+});
+
+router.get("/party/status", isAuthenticated, async (req, res) => {
+  try {
+    const { _id } = req.player;
+    const { code } = req.query;
+
+    const findParty = await Party.findOne({ code });
+
+    for (let i = 0; i < findParty.players.length; i++) {
+      if (findParty.players[i]._id.equals(_id)) {
+        return res.status(200).json(findParty);
+      }
+    }
+
+    return res
+      .status(401)
+      .json({ unauthorized: "You are not registered for this party" });
   } catch (err) {
     return res.status(400).json({ error: err });
   }

@@ -11,7 +11,7 @@ const Player = mongoose.model("Player", {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Party",
   },
-  is_turn: {
+  isAlreadyPlayed: {
     type: Boolean,
     default: false,
   },

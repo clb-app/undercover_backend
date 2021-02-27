@@ -22,6 +22,7 @@ const playerRoutes = require("./routes/player");
 app.use(playerRoutes);
 const wordRoutes = require("./routes/word");
 const { Socket } = require("net");
+const { find } = require("./models/Party");
 app.use(wordRoutes);
 
 mongoose.connect(process.env.MONGODB_URI, {
@@ -52,6 +53,53 @@ io.on("connection", (socket) => {
         break;
       }
     }
+  });
+
+  socket.on("startParty", async (code) => {
+    console.log(code);
+    const findParty = await Party.findOne({ code });
+
+    let c = 0,
+      u = 0,
+      m = 0;
+
+    let i = 0;
+    const oldPlayers = [...findParty.players];
+    while (i < oldPlayers.length) {
+      const rand = Math.round(Math.random() * 2);
+      let findPlayer;
+
+      if (rand === 0 && c < findParty.roles.civils) {
+        findPlayer = await Player.findOne({ _id: oldPlayers[i]._id });
+        findPlayer.word = findParty.words[0].word;
+        await findPlayer.save();
+        oldPlayers[i].word = findParty.words[0].word;
+        c++;
+        i++;
+      } else if (rand === 1 && u < findParty.roles.undercovers) {
+        findPlayer = await Player.findOne({ _id: oldPlayers[i]._id });
+        findPlayer.word = findParty.words[1].word;
+        await findPlayer.save();
+        oldPlayers[i].word = findParty.words[1].word;
+        u++;
+        i++;
+      } else if (m < findParty.roles.mrwhite) {
+        m++;
+        i++;
+      }
+    }
+
+    const newPlayers = [];
+    while (oldPlayers.length > 0) {
+      maxIndex = oldPlayers.length - 1;
+      const rand = Math.round(Math.random() * maxIndex);
+      const player = oldPlayers.splice(rand, 1).pop();
+      newPlayers.push(player);
+    }
+
+    findParty.players = newPlayers;
+
+    await findParty.save();
   });
 });
 

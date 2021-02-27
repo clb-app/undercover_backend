@@ -14,6 +14,8 @@ router.post("/party/new", async (req, res) => {
     const { playersNumber, roles, nickname } = req.fields;
     const token = req.headers.authorization.replace("Bearer ", "");
 
+    console.log(roles);
+
     let player;
     if (token) {
       player = await Player.findOne({ token });
@@ -23,6 +25,7 @@ router.post("/party/new", async (req, res) => {
       player = new Player({
         nickname,
         token,
+        word: null,
       });
     }
 
@@ -89,6 +92,7 @@ router.get("/party/join", async (req, res) => {
           player = new Player({
             nickname,
             token,
+            word: null,
           });
         }
 

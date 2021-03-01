@@ -31,11 +31,12 @@ mongoose.connect(process.env.MONGODB_URI, {
 });
 
 io.on("connection", (socket) => {
+  // ce socket est utilisé lorsqu'un joueur rejoint la partie, il met à jour le navigateur de chaque joueur en incluant le nouveau joueur
   socket.on("joinParty", async (data) => {
     const findParty = await Party.findOne({ code: data.code }).populate(
       "players"
     );
-    console.log(findParty);
+
     const findPlayer = await Player.findOne({ token: data.token });
     for (let i = 0; i < findParty.players.length; i++) {
       if (findParty.players[i]._id.equals(findPlayer._id)) {
@@ -45,8 +46,8 @@ io.on("connection", (socket) => {
     }
   });
 
+  // ce socket est utilisé lorsque le modérateur lance la partie, il assigne les mots à chaque joueur, change l'ordre des joueurs et met à jour le navigateur de chaque joueur pour jouer
   socket.on("startParty", async (code) => {
-    console.log(code);
     const findParty = await Party.findOne({ code }).populate("players");
 
     let c = 0,
@@ -92,6 +93,7 @@ io.on("connection", (socket) => {
     io.emit("server-startParty", findParty);
   });
 
+  // ce socket est utilisé lorsqu'un joueur joue, il met à jour la clé "isAlreadyPlayed" du joueur, push le mot dans son array et permet au prochain joueur de jouer
   socket.on("client-play", async (value, player) => {
     console.log("playing...");
     const findPlayer = await Player.findById({ _id: player._id });
@@ -110,6 +112,7 @@ io.on("connection", (socket) => {
     io.emit("server-startParty", findParty);
   });
 
+  // ce socket est utilisé lorsque le dernier joueur joue, il met à jour le navigateur de tous les joueurs pour passer aux votes
   socket.on("client-lapOver", async (party) => {
     const findParty = await Party.findOne({ _id: party._id }).populate(
       "players"

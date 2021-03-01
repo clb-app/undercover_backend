@@ -109,6 +109,13 @@ io.on("connection", (socket) => {
 
     io.emit("server-startParty", findParty);
   });
+
+  socket.on("client-lapOver", async (party) => {
+    const findParty = await Party.findOne({ _id: party._id }).populate(
+      "players"
+    );
+    io.emit("server-lapOver", findParty);
+  });
 });
 
 app.all("*", (req, res) => {

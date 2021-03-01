@@ -21,8 +21,6 @@ app.use(partyRoutes);
 const playerRoutes = require("./routes/player");
 app.use(playerRoutes);
 const wordRoutes = require("./routes/word");
-const { Socket } = require("net");
-const { find } = require("./models/Party");
 app.use(wordRoutes);
 
 mongoose.connect(process.env.MONGODB_URI, {
@@ -32,19 +30,11 @@ mongoose.connect(process.env.MONGODB_URI, {
   useFindAndModify: false,
 });
 
-// const findPartyFunc = async (data) => {
-//   return
-// };
-
-// const findPlayerFunc = async (data) => {
-//   return
-// };
-
 io.on("connection", (socket) => {
-  // socket.emit("hello", `hello ${socket.id}`);
-
   socket.on("joinParty", async (data) => {
-    const findParty = await Party.findOne({ code: data.code });
+    const findParty = await Party.findOne({ code: data.code }).populate(
+      "players"
+    );
     console.log(findParty);
     const findPlayer = await Player.findOne({ token: data.token });
     for (let i = 0; i < findParty.players.length; i++) {
@@ -57,7 +47,7 @@ io.on("connection", (socket) => {
 
   socket.on("startParty", async (code) => {
     console.log(code);
-    const findParty = await Party.findOne({ code });
+    const findParty = await Party.findOne({ code }).populate("players");
 
     let c = 0,
       u = 0,
@@ -73,14 +63,12 @@ io.on("connection", (socket) => {
         findPlayer = await Player.findOne({ _id: oldPlayers[i]._id });
         findPlayer.word = findParty.words[0].word;
         await findPlayer.save();
-        oldPlayers[i].word = findParty.words[0].word;
         c++;
         i++;
       } else if (rand === 1 && u < findParty.roles.undercovers) {
         findPlayer = await Player.findOne({ _id: oldPlayers[i]._id });
         findPlayer.word = findParty.words[1].word;
         await findPlayer.save();
-        oldPlayers[i].word = findParty.words[1].word;
         u++;
         i++;
       } else if (m < findParty.roles.mrwhite) {
@@ -100,6 +88,26 @@ io.on("connection", (socket) => {
     findParty.players = newPlayers;
 
     await findParty.save();
+
+    io.emit("server-startParty", findParty);
+  });
+
+  socket.on("client-play", async (value, player) => {
+    console.log("playing...");
+    const findPlayer = await Player.findById({ _id: player._id });
+    findPlayer.isAlreadyPlayed = true;
+
+    const newWords = [...findPlayer.words];
+    newWords.push(value);
+    findPlayer.words = newWords;
+
+    await findPlayer.save();
+
+    const findParty = await Party.findOne({ _id: player.party_id }).populate(
+      "players"
+    );
+
+    io.emit("server-startParty", findParty);
   });
 });
 

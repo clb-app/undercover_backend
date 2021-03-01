@@ -97,7 +97,7 @@ router.get("/party/join", async (req, res) => {
         }
 
         const newPlayers = [...party.players];
-        newPlayers.push(player);
+        newPlayers.push(player._id);
         party.players = newPlayers;
 
         player.party_id = party._id;

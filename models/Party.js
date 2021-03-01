@@ -21,7 +21,12 @@ const Party = mongoose.model("Party", {
     type: Number,
     default: 5,
   },
-  players: Array,
+  players: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Player",
+    },
+  ],
   token: String,
   code: Number,
   roles: Object,

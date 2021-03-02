@@ -193,4 +193,49 @@ router.get("/party/play", isAuthenticated, async (req, res) => {
   }
 });
 
+router.post("/party/vote", isAuthenticated, async (req, res) => {
+  try {
+    const { player } = req;
+    const { _id } = req.fields;
+
+    // if to fix
+    if (player._id === _id) {
+      return res.status(400).json({ error: "Can't vote against oneself" });
+    } else {
+      if (player.voteAgainst) {
+        const findOldPlayerToRemoveVote = await Player.findById({
+          _id: player.voteAgainst,
+        });
+
+        const updateVotes = [...findOldPlayerToRemoveVote.votes];
+
+        for (let i = 0; i < updateVotes.length; i++) {
+          if (updateVotes[i].equals(player._id)) {
+            updateVotes.splice(i, 1);
+            break;
+          }
+        }
+
+        findOldPlayerToRemoveVote.votes = updateVotes;
+
+        await findOldPlayerToRemoveVote.save();
+      }
+      const findPlayerToVoteAgainst = await Player.findById({ _id });
+
+      const newVotes = [...findPlayerToVoteAgainst.votes];
+      newVotes.push(player._id);
+      findPlayerToVoteAgainst.votes = newVotes;
+
+      await findPlayerToVoteAgainst.save();
+
+      player.voteAgainst = findPlayerToVoteAgainst._id;
+
+      await player.save();
+      return res.status(200).json(findPlayerToVoteAgainst);
+    }
+  } catch (err) {
+    return res.status(400).json({ error: err });
+  }
+});
+
 module.exports = router;

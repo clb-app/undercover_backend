@@ -95,7 +95,6 @@ io.on("connection", (socket) => {
 
   // ce socket est utilisé lorsqu'un joueur joue, il met à jour la clé "isAlreadyPlayed" du joueur, push le mot dans son array et permet au prochain joueur de jouer
   socket.on("client-play", async (value, player) => {
-    console.log("playing...");
     const findPlayer = await Player.findById({ _id: player._id });
     findPlayer.isAlreadyPlayed = true;
 
@@ -118,6 +117,10 @@ io.on("connection", (socket) => {
       "players"
     );
     io.emit("server-lapOver", findParty);
+  });
+
+  socket.on("client-closeVotes", (vote) => {
+    console.log(vote);
   });
 });
 

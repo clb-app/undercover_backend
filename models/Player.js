@@ -21,6 +21,17 @@ const Player = mongoose.model("Player", {
   },
   words: Array,
   token: String,
+  votes: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Player",
+    },
+  ],
+  voteAgainst: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Player",
+    default: null,
+  },
 });
 
 module.exports = Player;

@@ -66,7 +66,7 @@ router.post("/party/new", async (req, res) => {
     await newParty.save();
     await newLap.save();
 
-    return res.status(200).json(newParty);
+    return res.status(200).json({ party: newParty, player });
   } catch (err) {
     return res.status(400).json({ error: err });
   }
@@ -105,7 +105,7 @@ router.get("/party/join", async (req, res) => {
         await party.save();
         await player.save();
 
-        return res.status(200).json(party);
+        return res.status(200).json({ party, player });
       } else {
         return res.status(401).json({ unauthorized: "The party is full" });
       }
@@ -233,6 +233,19 @@ router.post("/party/vote", isAuthenticated, async (req, res) => {
       await player.save();
       return res.status(200).json(findPlayerToVoteAgainst);
     }
+  } catch (err) {
+    return res.status(400).json({ error: err });
+  }
+});
+
+router.post("/party/results", async (req, res) => {
+  try {
+    const { _id } = req.fields;
+
+    const findParty = await Party.findById({ _id }).populate("players");
+    // });
+
+    return res.status(200).json(findParty);
   } catch (err) {
     return res.status(400).json({ error: err });
   }

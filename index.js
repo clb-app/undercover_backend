@@ -119,6 +119,10 @@ io.on("connection", (socket) => {
     io.emit("server-lapOver", findParty);
   });
 
+  socket.on("client-startTimer", (mins) => {
+    io.emit("server-startTimer", mins);
+  });
+
   socket.on("client-closeVotes", (vote) => {
     console.log(vote);
   });

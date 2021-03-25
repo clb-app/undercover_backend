@@ -15,6 +15,10 @@ const Player = mongoose.model("Player", {
     type: Boolean,
     default: false,
   },
+  alive: {
+    type: Boolean,
+    default: true,
+  },
   is_ready: {
     type: Boolean,
     default: false,

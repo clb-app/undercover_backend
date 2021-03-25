@@ -242,10 +242,70 @@ router.post("/party/results", async (req, res) => {
   try {
     const { _id } = req.fields;
 
+    /* on retrouve la party avec l'id */
     const findParty = await Party.findById({ _id }).populate("players");
-    // });
 
-    return res.status(200).json(findParty);
+    /* on recherche le player qui a le plus de votes contre soi */
+    let eliminatedPlayer = findParty.players[0];
+    for (let i = 0; i < findParty.players.length; i++) {
+      if (i + 1 < findParty.players.length) {
+        findParty.players[i].isAlreadyPlayed = false;
+        if (
+          findParty.players[i].votes.length <
+          findParty.players[i + 1].votes.length
+        ) {
+          eliminatedPlayer = findParty.players[i];
+        }
+      }
+    }
+
+    await findParty.save();
+
+    // if (eliminatedPlayer.role != "mrwhite") {
+    //   /* on update le tableau des players de la partie en supprimant le joueur */
+    //   const updatePlayers = [...findParty.players];
+    //   for (let i = 0; i < findParty.players.length; i++) {
+    //     if (findParty.players[i].nickname === eliminatedPlayer.nickname) {
+    //       updatePlayers.splice(i, 1);
+    //       break;
+    //     }
+    //   }
+    //   findParty.players = updatePlayers;
+
+    /** on supprime un joueur d'une des catégories (civils undercovers ou mrwhite) */
+    findParty.roles[eliminatedPlayer.role] =
+      findParty.roles[eliminatedPlayer.role] - 1;
+    // }
+
+    /** ici on planifie la prochaine étape du jeu */
+    /**
+     * WHITE = mr white a été éliminé, il pourra donc tenter de saisir le mot des civils
+     * OVER = les undercovers sont plus nombreux que les civils
+     * WIN = il ne reste que des civils
+     * NEXT = on continue car il reste suffisamment de joueurs
+     */
+    let next = null;
+    if (eliminatedPlayer.role === "mrwhite") {
+      next = "WHITE";
+    } else if (findParty.roles.civils < findParty.roles.undercovers) {
+      next = "OVER";
+    } else if (
+      findParty.roles.undercovers === 0 &&
+      findParty.roles.mrwhite === 0
+    ) {
+      next = "WIN";
+    } else {
+      next = "NEXT";
+    }
+
+    // const updateLap = await Lap.find({ party_id: _id });
+
+    // const newEliminatedPlayers = [...updateLap.eliminated_players];
+    // newEliminatedPlayers.push(eliminatedPlayer);
+
+    // updateLap.eliminated_players = newEliminatedPlayers;
+
+    return res.status(200).json({ eliminatedPlayer, next });
   } catch (err) {
     return res.status(400).json({ error: err });
   }

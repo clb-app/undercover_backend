@@ -58,24 +58,30 @@ io.on("connection", (socket) => {
     const oldPlayers = [...findParty.players];
     while (i < oldPlayers.length) {
       const rand = Math.round(Math.random() * 2);
-      let findPlayer;
+      const findPlayer = await Player.findOne({ _id: oldPlayers[i]._id });
 
       if (rand === 0 && c < findParty.roles.civils) {
-        findPlayer = await Player.findOne({ _id: oldPlayers[i]._id });
+        // findPlayer =
         findPlayer.word = findParty.words[0].word;
-        await findPlayer.save();
+        findPlayer.role = "civil";
+        // await findPlayer.save();
         c++;
         i++;
       } else if (rand === 1 && u < findParty.roles.undercovers) {
-        findPlayer = await Player.findOne({ _id: oldPlayers[i]._id });
+        // findPlayer = await Player.findOne({ _id: oldPlayers[i]._id });
         findPlayer.word = findParty.words[1].word;
-        await findPlayer.save();
+        findPlayer.role = "undercover";
+        // await findPlayer.save();
         u++;
         i++;
       } else if (m < findParty.roles.mrwhite) {
+        // findPlayer = await Player.findOne({ _id: oldPlayers[i]._id });
+        findPlayer.role = "mrwhite";
+
         m++;
         i++;
       }
+      await findPlayer.save();
     }
 
     const newPlayers = [];

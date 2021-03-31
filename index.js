@@ -21,6 +21,7 @@ app.use(partyRoutes);
 const playerRoutes = require("./routes/player");
 app.use(playerRoutes);
 const wordRoutes = require("./routes/word");
+const { find } = require("./models/Party");
 app.use(wordRoutes);
 
 mongoose.connect(process.env.MONGODB_URI, {
@@ -61,6 +62,7 @@ io.on("connection", (socket) => {
       const findPlayer = await Player.findOne({ _id: oldPlayers[i]._id });
 
       if (rand === 0 && c < findParty.roles.civils) {
+        console.log(oldPlayers[i].nickname + " est c");
         // findPlayer =
         findPlayer.word = findParty.words[0].word;
         findPlayer.role = "civil";
@@ -68,6 +70,7 @@ io.on("connection", (socket) => {
         c++;
         i++;
       } else if (rand === 1 && u < findParty.roles.undercovers) {
+        console.log(oldPlayers[i].nickname + " est u");
         // findPlayer = await Player.findOne({ _id: oldPlayers[i]._id });
         findPlayer.word = findParty.words[1].word;
         findPlayer.role = "undercover";
@@ -88,8 +91,11 @@ io.on("connection", (socket) => {
     while (oldPlayers.length > 0) {
       maxIndex = oldPlayers.length - 1;
       const rand = Math.round(Math.random() * maxIndex);
-      const player = oldPlayers.splice(rand, 1).pop();
-      newPlayers.push(player);
+      if (oldPlayers[rand].role === "mrwhite" && newPlayers.length === 0) {
+      } else {
+        const player = oldPlayers.splice(rand, 1).pop();
+        newPlayers.push(player);
+      }
     }
 
     findParty.players = newPlayers;
@@ -131,6 +137,48 @@ io.on("connection", (socket) => {
 
   socket.on("client-closeVotes", (vote) => {
     console.log(vote);
+  });
+
+  // socket utilisé lorsqu'un joueur est éliminé et que le modérateur passe au tour suivant
+  socket.on("client-nextLap", async (party, eliminatedPlayer) => {
+    /* ici on cherche le joueur éliminé et on change son alive à false pour ne plus le faire jouer */
+    const findPlayer = await Player.findById({ _id: eliminatedPlayer._id });
+    findPlayer.alive = false;
+    // console.log(findPlayer);
+
+    await findPlayer.save();
+
+    /* ici on remet les paramètres de la partie et des joueurs par défaut */
+    const findParty = await Party.findById({ _id: party._id }).populate(
+      "players"
+    );
+
+    const s = eliminatedPlayer.role === "mrwhite" ? "" : "s";
+    const newRoles = { ...findParty.roles };
+    newRoles[eliminatedPlayer.role + s] =
+      newRoles[eliminatedPlayer.role + s] - 1; // on supprime un rôle
+    findParty.roles = newRoles;
+
+    await findParty.save();
+
+    const newPlayers = [];
+    findParty.players.map(async (player, index) => {
+      const updatePlayer = await Player.findById({ _id: player._id });
+      updatePlayer.isAlreadyPlayed = false;
+      updatePlayer.voteAgainst = null;
+      updatePlayer.votes = [];
+
+      await updatePlayer.save();
+
+      newPlayers.push(updatePlayer);
+
+      if (index + 1 === findParty.players.length) {
+        console.log("last index");
+        findParty.players = newPlayers;
+
+        io.emit("server-startParty", findParty);
+      }
+    });
   });
 });
 

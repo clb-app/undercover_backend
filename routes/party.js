@@ -198,9 +198,14 @@ router.post("/party/vote", isAuthenticated, async (req, res) => {
     const { player } = req;
     const { _id } = req.fields;
 
-    // if to fix
+    const checkPlayerIsAlive = await Player.findById({ _id });
+
     if (player._id === _id) {
       return res.status(400).json({ error: "Can't vote against oneself" });
+    } else if (!checkPlayerIsAlive.alive || !player.alive) {
+      return res
+        .status(400)
+        .json({ error: "Can't vote against a player already eliminated" });
     } else {
       if (player.voteAgainst) {
         const findOldPlayerToRemoveVote = await Player.findById({
@@ -248,18 +253,16 @@ router.post("/party/results", async (req, res) => {
     /* on recherche le player qui a le plus de votes contre soi */
     let eliminatedPlayer = findParty.players[0];
     for (let i = 0; i < findParty.players.length; i++) {
-      if (i + 1 < findParty.players.length) {
-        findParty.players[i].isAlreadyPlayed = false;
-        if (
-          findParty.players[i].votes.length <
-          findParty.players[i + 1].votes.length
-        ) {
+      if (findParty.players[i].votes) {
+        // console.log("if");
+        if (eliminatedPlayer.votes.length < findParty.players[i].votes.length) {
+          // console.log("changed");
           eliminatedPlayer = findParty.players[i];
         }
       }
+      // console.log(eliminatedPlayer);
     }
-
-    await findParty.save();
+    // await findParty.save();
 
     // if (eliminatedPlayer.role != "mrwhite") {
     //   /* on update le tableau des players de la partie en supprimant le joueur */
@@ -273,9 +276,11 @@ router.post("/party/results", async (req, res) => {
     //   findParty.players = updatePlayers;
 
     /** on supprime un joueur d'une des catégories (civils undercovers ou mrwhite) */
-    findParty.roles[eliminatedPlayer.role] =
-      findParty.roles[eliminatedPlayer.role] - 1;
+    const s = eliminatedPlayer.role === "mrwhite" ? "" : "s";
+    findParty.roles[eliminatedPlayer.role + s] =
+      findParty.roles[eliminatedPlayer.role + s] - 1;
     // }
+    // console.log(findParty.roles);
 
     /** ici on planifie la prochaine étape du jeu */
     /**

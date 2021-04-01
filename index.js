@@ -120,7 +120,7 @@ io.on("connection", (socket) => {
       "players"
     );
 
-    io.emit("server-startParty", findParty);
+    io.emit("server-startParty", findParty, value, player.nickname);
   });
 
   // ce socket est utilisé lorsque le dernier joueur joue, il met à jour le navigateur de tous les joueurs pour passer aux votes
@@ -152,6 +152,8 @@ io.on("connection", (socket) => {
     const findParty = await Party.findById({ _id: party._id }).populate(
       "players"
     );
+
+    findParty.lap += 1;
 
     const s = eliminatedPlayer.role === "mrwhite" ? "" : "s";
     const newRoles = { ...findParty.roles };

@@ -13,6 +13,10 @@ const Party = mongoose.model("Party", {
     type: Boolean,
     default: false,
   },
+  lap: {
+    type: Number,
+    default: 0,
+  },
   moderator_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Player",

@@ -24,7 +24,7 @@ const wordRoutes = require("./routes/word");
 const { find } = require("./models/Party");
 app.use(wordRoutes);
 
-mongoose.connect(process.env.MONGODB_URI, {
+mongoose.connect(process.env.MONGODB_URI_PROD, {
   useCreateIndex: true,
   useUnifiedTopology: true,
   useNewUrlParser: true,

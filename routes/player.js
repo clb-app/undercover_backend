@@ -21,9 +21,26 @@ router.post("/player/new", async (req, res) => {
   }
 });
 
-router.get("/player", isAuthenticated, (req, res) => {
-  console.log("route");
-  return res.status(200).json({ player: req.player });
+router.get("/player", isAuthenticated, async (req, res) => {
+  try {
+    const { _id } = req.player;
+
+    const findPlayer = await Player.findById({ _id });
+
+    findPlayer.alive = true;
+    findPlayer.isAlreadyPlayed = false;
+    findPlayer.words = [];
+    findPlayer.votes = [];
+    findPlayer.voteAgainst = null;
+    findPlayer.word = null;
+    findPlayer.role = null;
+
+    await findPlayer.save();
+
+    return res.status(200).json({ player: findPlayer });
+  } catch (error) {
+    return res.status(400).json({ error: err });
+  }
 });
 
 module.exports = router;

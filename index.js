@@ -122,6 +122,12 @@ io.on("connection", (socket) => {
       "players"
     );
 
+    const newWordsAlreadyUsed = [...findParty.wordsAlreadyUsed];
+    newWordsAlreadyUsed.push(value);
+    findParty.wordsAlreadyUsed = newWordsAlreadyUsed;
+
+    await findParty.save();
+
     io.emit("server-startParty", findParty, value, player.nickname);
   });
 

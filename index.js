@@ -56,31 +56,33 @@ io.on("connection", (socket) => {
       m = 0;
 
     let i = 0;
-    const oldPlayers = [...findParty.players];
-    while (i < oldPlayers.length) {
+    const updatePlayers = [];
+    while (i < findParty.players.length) {
       const rand = Math.round(Math.random() * 2);
-      const findPlayer = await Player.findOne({ _id: oldPlayers[i]._id });
+      const findPlayer = await Player.findOne({
+        _id: findParty.players[i]._id,
+      });
 
       if (rand === 0 && c < findParty.roles.civils) {
-        console.log(oldPlayers[i].nickname + " est c");
         // findPlayer =
         findPlayer.word = findParty.words[0].word;
         findPlayer.role = "civil";
         // await findPlayer.save();
+        updatePlayers.push(findPlayer);
         c++;
         i++;
       } else if (rand === 1 && u < findParty.roles.undercovers) {
-        console.log(oldPlayers[i].nickname + " est u");
         // findPlayer = await Player.findOne({ _id: oldPlayers[i]._id });
         findPlayer.word = findParty.words[1].word;
         findPlayer.role = "undercover";
         // await findPlayer.save();
+        updatePlayers.push(findPlayer);
         u++;
         i++;
       } else if (m < findParty.roles.mrwhite) {
         // findPlayer = await Player.findOne({ _id: oldPlayers[i]._id });
         findPlayer.role = "mrwhite";
-
+        updatePlayers.push(findPlayer);
         m++;
         i++;
       }
@@ -88,12 +90,12 @@ io.on("connection", (socket) => {
     }
 
     const newPlayers = [];
-    while (oldPlayers.length > 0) {
-      maxIndex = oldPlayers.length - 1;
+    while (updatePlayers.length > 0) {
+      maxIndex = updatePlayers.length - 1;
       const rand = Math.round(Math.random() * maxIndex);
-      if (oldPlayers[rand].role === "mrwhite" && newPlayers.length === 0) {
+      if (updatePlayers[rand].role === "mrwhite" && newPlayers.length === 0) {
       } else {
-        const player = oldPlayers.splice(rand, 1).pop();
+        const player = updatePlayers.splice(rand, 1).pop();
         newPlayers.push(player);
       }
     }

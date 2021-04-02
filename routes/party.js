@@ -292,7 +292,7 @@ router.post("/party/results", async (req, res) => {
     let next = null;
     if (eliminatedPlayer.role === "mrwhite") {
       next = "WHITE";
-    } else if (findParty.roles.civils < findParty.roles.undercovers) {
+    } else if (findParty.roles.civils <= findParty.roles.undercovers) {
       next = "OVER";
     } else if (
       findParty.roles.undercovers === 0 &&

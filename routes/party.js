@@ -303,14 +303,21 @@ router.post("/party/results", async (req, res) => {
       next = "NEXT";
     }
 
+    const newEliminatedPlayer = await Player.findById({
+      _id: eliminatedPlayer._id,
+    }).populate("votes");
+
     // const updateLap = await Lap.find({ party_id: _id });
 
     // const newEliminatedPlayers = [...updateLap.eliminated_players];
     // newEliminatedPlayers.push(eliminatedPlayer);
 
     // updateLap.eliminated_players = newEliminatedPlayers;
+    console.log(newEliminatedPlayer);
 
-    return res.status(200).json({ eliminatedPlayer, next });
+    return res
+      .status(200)
+      .json({ eliminatedPlayer: newEliminatedPlayer, next });
   } catch (err) {
     return res.status(400).json({ error: err });
   }

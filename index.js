@@ -190,6 +190,20 @@ io.on("connection", (socket) => {
       }
     });
   });
+
+  // socket utilisé lorsque Mr White essaye de trouver le mot des civils
+  socket.on("client-mrWhiteWord", async (party, word) => {
+    const findParty = await Party.findById({ _id: party._id });
+
+    let checkWord = null;
+    if (findParty.civil_word.toLowerCase() === word.toLowerCase()) {
+      checkWord = true;
+    } else {
+      checkWord = false;
+    }
+
+    io.emit("server-mrWhiteWord", checkWord, word);
+  });
 });
 
 app.all("*", (req, res) => {

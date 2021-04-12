@@ -54,6 +54,7 @@ router.post("/party/new", async (req, res) => {
       code,
       roles,
       words,
+      civil_word: words[0].word,
     });
 
     player.party_id = newParty._id;

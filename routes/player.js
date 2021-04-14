@@ -21,6 +21,25 @@ router.post("/player/new", async (req, res) => {
   }
 });
 
+router.get("/player/reload-votes", isAuthenticated, async (req, res) => {
+  try {
+    console.log("route /player/reload-votes");
+    const { _id } = req.player;
+
+    const findPlayer = await Player.findById({ _id });
+
+    findPlayer.votes = [];
+    findPlayer.voteAgainst = null;
+
+    await findPlayer.save();
+    console.log(findPlayer);
+
+    return res.status(200).json("OK");
+  } catch (err) {
+    return res.status(400).json({ error: err });
+  }
+});
+
 router.get("/player", isAuthenticated, async (req, res) => {
   try {
     const { _id } = req.player;

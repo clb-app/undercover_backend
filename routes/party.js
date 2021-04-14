@@ -197,7 +197,7 @@ router.get("/party/play", isAuthenticated, async (req, res) => {
 router.post("/party/vote", isAuthenticated, async (req, res) => {
   try {
     const { player } = req;
-    const { _id } = req.fields;
+    const { _id, reload } = req.fields;
 
     const checkPlayerIsAlive = await Player.findById({ _id });
 
@@ -250,75 +250,87 @@ router.post("/party/results", async (req, res) => {
 
     /* on retrouve la party avec l'id */
     const findParty = await Party.findById({ _id }).populate("players");
+    console.log("findParty =", findParty);
 
     /* on recherche le player qui a le plus de votes contre soi */
     let eliminatedPlayer = findParty.players[0];
+    // console.log(eliminatedPlayer);
+    let eliminatedPlayers = [];
+    eliminatedPlayers.push(findParty.players[0]);
     for (let i = 0; i < findParty.players.length; i++) {
       if (findParty.players[i].votes) {
-        // console.log("if");
-        if (eliminatedPlayer.votes.length < findParty.players[i].votes.length) {
-          // console.log("changed");
-          eliminatedPlayer = findParty.players[i];
+        if (
+          eliminatedPlayers[0].votes.length < findParty.players[i].votes.length
+        ) {
+          eliminatedPlayers = [];
+          eliminatedPlayers.push(findParty.players[i]);
+          // eliminatedPlayer = findParty.players[i];
+          // console.log(eliminatedPlayers);
+        } else if (
+          eliminatedPlayers[0].votes.length ===
+          findParty.players[i].votes.length
+        ) {
+          // console.log("else if = ", findParty.players[i].nickname);
+          for (let j = 0; j < eliminatedPlayers.length; j++) {
+            if (eliminatedPlayers[j]._id !== findParty.players[i]._id) {
+              if (j + 1 === eliminatedPlayers.length) {
+                // console.log("pushed");
+                eliminatedPlayers.push(findParty.players[i]);
+              }
+            } else {
+              break;
+            }
+          }
         }
       }
       // console.log(eliminatedPlayer);
     }
-    // await findParty.save();
 
-    // if (eliminatedPlayer.role != "mrwhite") {
-    //   /* on update le tableau des players de la partie en supprimant le joueur */
-    //   const updatePlayers = [...findParty.players];
-    //   for (let i = 0; i < findParty.players.length; i++) {
-    //     if (findParty.players[i].nickname === eliminatedPlayer.nickname) {
-    //       updatePlayers.splice(i, 1);
-    //       break;
-    //     }
-    //   }
-    //   findParty.players = updatePlayers;
+    // console.log(eliminatedPlayers);
 
-    /** on supprime un joueur d'une des catégories (civils undercovers ou mrwhite) */
-    const s = eliminatedPlayer.role === "mrwhite" ? "" : "s";
-    findParty.roles[eliminatedPlayer.role + s] =
-      findParty.roles[eliminatedPlayer.role + s] - 1;
-    // }
-    // console.log(findParty.roles);
-
-    /** ici on planifie la prochaine étape du jeu */
-    /**
-     * WHITE = mr white a été éliminé, il pourra donc tenter de saisir le mot des civils
-     * OVER = les undercovers sont plus nombreux que les civils
-     * WIN = il ne reste que des civils
-     * NEXT = on continue car il reste suffisamment de joueurs
-     */
     let next = null;
-    if (eliminatedPlayer.role === "mrwhite") {
-      next = "WHITE";
-    } else if (findParty.roles.civils <= findParty.roles.undercovers) {
-      next = "OVER";
-    } else if (
-      findParty.roles.undercovers === 0 &&
-      findParty.roles.mrwhite === 0
-    ) {
-      next = "WIN";
+    if (eliminatedPlayers.length === 1) {
+      // console.log("result if");
+      /** on supprime un joueur d'une des catégories (civils undercovers ou mrwhite) */
+      const s = eliminatedPlayers[0].role === "mrwhite" ? "" : "s";
+      findParty.roles[eliminatedPlayers[0].role + s] =
+        findParty.roles[eliminatedPlayers[0].role + s] - 1;
+
+      /** ici on planifie la prochaine étape du jeu */
+      /**
+       * WHITE = mr white a été éliminé, il pourra donc tenter de saisir le mot des civils
+       * OVER = les undercovers sont plus nombreux que les civils
+       * WIN = il ne reste que des civils
+       * NEXT = on continue car il reste suffisamment de joueurs
+       */
+      // let next = null;
+      if (eliminatedPlayers[0].role === "mrwhite") {
+        next = "WHITE";
+      } else if (findParty.roles.civils <= findParty.roles.undercovers) {
+        next = "OVER";
+      } else if (
+        findParty.roles.undercovers === 0 &&
+        findParty.roles.mrwhite === 0
+      ) {
+        next = "WIN";
+      } else {
+        next = "NEXT";
+      }
+
+      const newEliminatedPlayer = await Player.find({
+        _id: eliminatedPlayers[0]._id,
+      }).populate("votes");
+
+      return res
+        .status(200)
+        .json({ eliminatedPlayer: newEliminatedPlayer, next });
     } else {
-      next = "NEXT";
+      next = "EQUAL";
+
+      return res
+        .status(200)
+        .json({ eliminatedPlayer: eliminatedPlayers, next });
     }
-
-    const newEliminatedPlayer = await Player.findById({
-      _id: eliminatedPlayer._id,
-    }).populate("votes");
-
-    // const updateLap = await Lap.find({ party_id: _id });
-
-    // const newEliminatedPlayers = [...updateLap.eliminated_players];
-    // newEliminatedPlayers.push(eliminatedPlayer);
-
-    // updateLap.eliminated_players = newEliminatedPlayers;
-    console.log(newEliminatedPlayer);
-
-    return res
-      .status(200)
-      .json({ eliminatedPlayer: newEliminatedPlayer, next });
   } catch (err) {
     return res.status(400).json({ error: err });
   }

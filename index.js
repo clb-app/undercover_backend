@@ -122,6 +122,8 @@ io.on("connection", (socket) => {
       "players"
     );
 
+    console.log(findParty.players);
+
     const newWordsAlreadyUsed = [...findParty.wordsAlreadyUsed];
     newWordsAlreadyUsed.push(value);
     findParty.wordsAlreadyUsed = newWordsAlreadyUsed;

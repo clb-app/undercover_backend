@@ -186,6 +186,8 @@ io.on("connection", (socket) => {
         console.log("last index");
         findParty.players = newPlayers;
 
+        await findParty.save();
+
         io.emit("server-startParty", findParty);
       }
     });

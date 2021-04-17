@@ -178,9 +178,10 @@ io.on("connection", (socket) => {
     // await findParty.save();
 
     const newPlayers = [];
-    findParty.players.map(async (player, index) => {
+    // findParty.players.map(async (player, index) => {
+    for (let i = 0; i < findParty.players.length; i++) {
       console.log("socket nextLap - player from findParty = ", player);
-      const updatePlayer = await Player.findById({ _id: player._id });
+      const updatePlayer = await Player.findById({ _id: player[i]._id });
       updatePlayer.isAlreadyPlayed = false;
       updatePlayer.voteAgainst = null;
       updatePlayer.votes = [];
@@ -188,8 +189,8 @@ io.on("connection", (socket) => {
       newPlayers.push(updatePlayer);
       console.log("socket nextLap - newPlayers from findParty = ", newPlayers);
 
-      console.log(index);
-      if (index + 1 === findParty.players.length) {
+      console.log(i);
+      if (i + 1 === findParty.players.length) {
         console.log("last index");
         findParty.players = newPlayers;
 
@@ -198,7 +199,9 @@ io.on("connection", (socket) => {
         await findParty.save();
       }
       await updatePlayer.save();
-    });
+    }
+
+    // });
   });
 
   // socket utilisé lorsque Mr White essaye de trouver le mot des civils

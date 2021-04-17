@@ -133,6 +133,10 @@ io.on("connection", (socket) => {
     io.emit("server-startParty", findParty, value, player.nickname);
   });
 
+  socket.on("client-stopTimer", () => {
+    io.emit("server-stopTimer");
+  });
+
   // ce socket est utilisé lorsque le dernier joueur joue, il met à jour le navigateur de tous les joueurs pour passer aux votes
   socket.on("client-lapOver", async (party) => {
     const findParty = await Party.findOne({ _id: party._id }).populate(

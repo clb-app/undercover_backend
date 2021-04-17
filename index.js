@@ -160,7 +160,7 @@ io.on("connection", (socket) => {
     findPlayer.alive = false;
     // console.log(findPlayer);
 
-    // await findPlayer.save();
+    await findPlayer.save();
 
     /* ici on remet les paramètres de la partie et des joueurs par défaut */
     const findParty = await Party.findById({ _id: party._id }).populate(
@@ -175,7 +175,7 @@ io.on("connection", (socket) => {
       newRoles[eliminatedPlayer.role + s] - 1; // on supprime un rôle
     findParty.roles = newRoles;
 
-    await findParty.save();
+    // await findParty.save();
 
     const newPlayers = [];
     findParty.players.map(async (player, index) => {

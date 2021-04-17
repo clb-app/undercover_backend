@@ -185,10 +185,9 @@ io.on("connection", (socket) => {
       updatePlayer.voteAgainst = null;
       updatePlayer.votes = [];
 
-      await updatePlayer.save();
-
       newPlayers.push(updatePlayer);
 
+      await updatePlayer.save();
       if (index + 1 === findParty.players.length) {
         console.log("last index");
         findParty.players = newPlayers;
@@ -197,9 +196,9 @@ io.on("connection", (socket) => {
           newPlayers
         );
 
-        await findParty.save();
         console.log("socket nextLap - findParty = ", findParty);
         io.emit("server-startParty", findParty);
+        await findParty.save();
       }
     });
   });

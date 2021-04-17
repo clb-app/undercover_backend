@@ -160,7 +160,7 @@ io.on("connection", (socket) => {
     findPlayer.alive = false;
     // console.log(findPlayer);
 
-    await findPlayer.save();
+    // await findPlayer.save();
 
     /* ici on remet les paramètres de la partie et des joueurs par défaut */
     const findParty = await Party.findById({ _id: party._id }).populate(
@@ -188,13 +188,16 @@ io.on("connection", (socket) => {
       await updatePlayer.save();
 
       newPlayers.push(updatePlayer);
-      findParty.players = newPlayers;
-      console.log("socket nextLap - newPlayers from findParty = ", newPlayers);
-
-      await findParty.save();
 
       if (index + 1 === findParty.players.length) {
         console.log("last index");
+        findParty.players = newPlayers;
+        console.log(
+          "socket nextLap - newPlayers from findParty = ",
+          newPlayers
+        );
+
+        await findParty.save();
         console.log("socket nextLap - findParty = ", findParty);
         io.emit("server-startParty", findParty);
       }

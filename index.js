@@ -179,6 +179,7 @@ io.on("connection", (socket) => {
 
     const newPlayers = [];
     findParty.players.map(async (player, index) => {
+      console.log("socket nextLap - player from findParty = ", player);
       const updatePlayer = await Player.findById({ _id: player._id });
       updatePlayer.isAlreadyPlayed = false;
       updatePlayer.voteAgainst = null;
@@ -187,13 +188,14 @@ io.on("connection", (socket) => {
       await updatePlayer.save();
 
       newPlayers.push(updatePlayer);
+      findParty.players = newPlayers;
+      console.log("socket nextLap - newPlayers from findParty = ", newPlayers);
+
+      await findParty.save();
 
       if (index + 1 === findParty.players.length) {
         console.log("last index");
-        findParty.players = newPlayers;
-
-        await findParty.save();
-
+        console.log("socket nextLap - findParty = ", findParty);
         io.emit("server-startParty", findParty);
       }
     });

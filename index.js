@@ -186,20 +186,18 @@ io.on("connection", (socket) => {
       updatePlayer.votes = [];
 
       newPlayers.push(updatePlayer);
+      console.log("socket nextLap - newPlayers from findParty = ", newPlayers);
 
-      await updatePlayer.save();
+      console.log(index);
       if (index + 1 === findParty.players.length) {
         console.log("last index");
         findParty.players = newPlayers;
-        console.log(
-          "socket nextLap - newPlayers from findParty = ",
-          newPlayers
-        );
 
         console.log("socket nextLap - findParty = ", findParty);
         io.emit("server-startParty", findParty);
         await findParty.save();
       }
+      await updatePlayer.save();
     });
   });
 

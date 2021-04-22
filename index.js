@@ -177,28 +177,54 @@ io.on("connection", (socket) => {
 
     // await findParty.save();
 
-    const newPlayers = [];
-    findParty.players.map(async (player, index) => {
-      console.log("socket nextLap - player from findParty = ", player);
-      const updatePlayer = await Player.findById({ _id: player._id });
-      updatePlayer.isAlreadyPlayed = false;
-      updatePlayer.voteAgainst = null;
-      updatePlayer.votes = [];
+    // const newPlayers = [];
+    // findParty.players.map(async (player, index) => {
+    //   console.log("socket nextLap - player from findParty = ", player);
+    //   const updatePlayer = await Player.findById({ _id: player._id });
+    //   updatePlayer.isAlreadyPlayed = false;
+    //   updatePlayer.voteAgainst = null;
+    //   updatePlayer.votes = [];
 
-      newPlayers.push(updatePlayer);
-      console.log("socket nextLap - newPlayers from findParty = ", newPlayers);
+    //   newPlayers.push(updatePlayer);
+    //   console.log("socket nextLap - newPlayers from findParty = ", newPlayers);
 
-      console.log(index);
-      if (index + 1 === findParty.players.length) {
-        console.log("last index");
-        findParty.players = newPlayers;
+    //   console.log(index);
+    //   if (index + 1 === findParty.players.length) {
+    //     console.log("last index");
+    //     findParty.players = newPlayers;
 
-        console.log("socket nextLap - findParty = ", findParty);
-        io.emit("server-startParty", findParty);
-        await findParty.save();
-      }
-      await updatePlayer.save();
-    });
+    //     console.log("socket nextLap - findParty = ", findParty);
+    //     io.emit("server-startParty", findParty);
+    //     await findParty.save();
+    //   }
+    //   await updatePlayer.save();
+    // });
+    (async () => {
+      const newPlayers = [];
+      const promises = findParty.players.map(async (player, index) => {
+        console.log("socket nextLap - player from findParty = ", player);
+        const updatePlayer = await Player.findById({ _id: player._id });
+        updatePlayer.isAlreadyPlayed = false;
+        updatePlayer.voteAgainst = null;
+        updatePlayer.votes = [];
+        newPlayers.push(updatePlayer);
+        console.log(
+          "socket nextLap - newPlayers from findParty = ",
+          newPlayers
+        );
+        console.log(index);
+        if (index + 1 === findParty.players.length) {
+          console.log("last index");
+          findParty.players = newPlayers;
+          console.log("socket nextLap - findParty = ", findParty);
+          io.emit("server-startParty", findParty);
+          await findParty.save();
+        }
+        await updatePlayer.save();
+      });
+      const res = await Promise.all(promises);
+      console.log(res);
+    })();
   });
 
   // socket utilisé lorsque Mr White essaye de trouver le mot des civils

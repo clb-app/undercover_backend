@@ -213,17 +213,20 @@ io.on("connection", (socket) => {
           newPlayers
         );
         console.log(index);
-        if (index + 1 === findParty.players.length) {
-          console.log("last index");
-          findParty.players = newPlayers;
-          console.log("socket nextLap - findParty = ", findParty);
-          io.emit("server-startParty", findParty);
-          await findParty.save();
-        }
         await updatePlayer.save();
+        // if (index + 1 === findParty.players.length) {
+        // console.log("last index");
+        return updatePlayer;
+
+        // }
       });
-      const res = await Promise.all(promises);
-      console.log(res);
+      const players = await Promise.all(promises);
+      console.log("socket nextLap - players = ", players);
+
+      findParty.players = players;
+      await findParty.save();
+      console.log("socket nextLap - findParty = ", findParty);
+      io.emit("server-startParty", findParty);
     })();
   });
 

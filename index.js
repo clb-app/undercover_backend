@@ -214,11 +214,8 @@ io.on("connection", (socket) => {
         );
         console.log(index);
         await updatePlayer.save();
-        // if (index + 1 === findParty.players.length) {
-        // console.log("last index");
-        return updatePlayer;
 
-        // }
+        return updatePlayer;
       });
       const players = await Promise.all(promises);
       console.log("socket nextLap - players = ", players);
@@ -242,6 +239,12 @@ io.on("connection", (socket) => {
     }
 
     io.emit("server-mrWhiteWord", checkWord, word);
+  });
+
+  socket.on("client-updateVotes", async (id) => {
+    const findParty = await Party.findById({ _id: id }).populate("players");
+
+    io.emit("server-updateVotes", findParty);
   });
 });
 

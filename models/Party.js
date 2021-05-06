@@ -37,6 +37,7 @@ const Party = mongoose.model("Party", {
   words: Array,
   wordsAlreadyUsed: Array,
   civil_word: String,
+  timer: Number,
 });
 
 module.exports = Party;

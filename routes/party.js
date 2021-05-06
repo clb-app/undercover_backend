@@ -11,7 +11,7 @@ const isAuthenticated = require("../middlewares/isAuthenticated");
 
 router.post("/party/new", async (req, res) => {
   try {
-    const { playersNumber, roles, nickname } = req.fields;
+    const { playersNumber, roles, nickname, timer } = req.fields;
     const token = req.headers.authorization.replace("Bearer ", "");
 
     console.log(roles);
@@ -55,6 +55,7 @@ router.post("/party/new", async (req, res) => {
       roles,
       words,
       civil_word: words[0].word,
+      timer,
     });
 
     player.party_id = newParty._id;
